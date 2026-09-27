@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
-    const handleResponse = (response) => {
+    const handleResponse = async (response) => {
       const content = document.querySelector('#content');
 
       switch (response.status) {
@@ -25,21 +25,66 @@
           content.innerHTML = `<b>Resource Not Found</b>`;
           break;
         default:
-          content.innerHTML = `<b>Error Code not Implemented by client.</b>`;
+          content.innerHTML = `<b>Error Code not implemented by client.</b>`;
           break;
-      }      
-    }
+      }
 
-    const sendPost = () => {};
+      const obj = await response.json();
+      if (obj.message) {
+        content.innerHTML += `<p>${obj.message}</p>`;
+      }
+    };
+
+    const sendPost = async (nameForm) => {
+      const url = nameForm.getAttribute('action');
+      const method = nameForm.getAttribute('method');
+
+      const name = nameForm.querySelector('#name').value;
+      const age = nameForm.querySelection('#age').value;
+
+      const data = JSON.stringify({name, age});
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          Accept: 'application/json'
+        },
+        body: data
+      });
+
+      handleResponse(response);
+    };
+
+    const sendGet = async (userForm) => {
+      const url = userForm.querySelector('#urlField').value;
+      const method = userForm.querySelector('#methodSelect').value;
+
+      const response = await fetch (url, {
+        method: method,
+        headers: {
+          Accept: 'application/json'
+        }
+      });
+
+      handleResponse(response);
+    };
 
     const init = () => {
       const nameForm = document.querySelector('#nameForm');
 
-      //nameForm.addEventListener('submit', () => {});
+      nameForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sentPost(nameForm);
+        return false;
+      });
 
       const userForm = document.querySelector('#userForm');
 
-      //userForm.addEventListener('submit', () => {});
+      userForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sendGet(userForm);
+        return false;
+      });
     };
 
     window.onload = init;

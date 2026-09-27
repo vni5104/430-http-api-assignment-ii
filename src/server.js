@@ -1,16 +1,28 @@
 const http = require('http');
 const htmlHandler = require('./htmlResponses.js');
+const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const urlStruct = {
     '/': htmlHandler.getIndex,
-    '/style.css': htmlHandler.getCSS
+    '/style.css': htmlHandler.getCSS,
+    '/getUsers': jsonHandler.getUsers,
+    '/notReal': jsonHandler.notReal,
+    default: htmlHandler.getIndex
 };
 
 const onRequest = (request, response) => {
     const protocol = request.connection.encrypted ? 'https' : 'http';
     const parsedUrl = new URL(request.url, `${protocol}://${request.headers.host}`);
+
+    const handler = urlStruct[parsedUrl.pathname];
+    
+    if (handler) {
+        handler(request, response);
+    } else {
+        urlStruct.default(request, response);
+    }
 };
 
 http.createServer(onRequest).listen(port, () => {
