@@ -16,24 +16,56 @@ const respondJSON = (request, response, status, object) => {
 
 const getUsers = (request, response) => {
     const responseJSON = {
-        message: JSON.stringify(users),
+        users,
     };
 
     respondJSON(request, response, 200, responseJSON);
 };
 
-const notReal = (request, response) => {
+const notFound = (request, response) => {
     const responseJSON = {
-        message: 'The page you are looking for is not found.'
-    }
+        message: 'The page you are looking for is not found.',
+        id: 'notFound'
+    };
 
     respondJSON(request, response, 404, responseJSON);
 }
 
-const addUsers = () => {};
+const addUser = (request, response) => {
+    const responseJSON = {
+        message: "Name and Age are required"
+    };
+
+    const {name, age} = response.body;
+
+    //Status 400: Bad Request (user missing some/all required params)
+    if (!name || !age) {
+        responseJSON.id = "missingParameters";
+        return respondJSON(request, response, 400, responseJSON);
+    }
+
+    //Status 201: Created Successfully (add new user to users)
+    let statusCode = 204;
+
+    if (!users[name]) {
+        statusCode = 201;
+        users[name] = {
+            name: name
+        };
+    }
+    users[name].age = age;
+
+    if (statusCode === 201) {
+        responseJSON.message = "User Successfully Created";
+        return respondJSON(request, response, statusCode, responseJSON);
+    }
+
+    //Status 204: Updated (update existing user in users)
+    respondJSON(request, response, statusCode, {});
+};
 
 module.exports = {
     getUsers,
-    notReal,
-    addUsers,
+    notFound,
+    addUser,
 }

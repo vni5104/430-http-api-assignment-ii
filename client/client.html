@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
-    const handleResponse = async (response) => {
+    const handleResponse = async (response, method) => {
       const content = document.querySelector('#content');
 
       switch (response.status) {
@@ -29,9 +29,15 @@
           break;
       }
 
-      const obj = await response.json();
-      if (obj.message) {
-        content.innerHTML += `<p>${obj.message}</p>`;
+      if (method != 'head') {
+        const obj = await response.json();
+
+        if (obj.message) {
+          content.innerHTML += `<p>${obj.message}</p>`;
+        }
+        if (obj.users) {
+          content.innerHTML += `<p>${JSON.stringify(obj.users)}</p>`
+        }
       }
     };
 
@@ -39,20 +45,22 @@
       const url = nameForm.getAttribute('action');
       const method = nameForm.getAttribute('method');
 
-      const name = nameForm.querySelector('#name').value;
-      const age = nameForm.querySelection('#age').value;
+      const name = nameForm.querySelector('#nameField').value;
+      const age = nameForm.querySelector('#ageField').value;
 
       const data = JSON.stringify({name, age});
+      //console.log(data);
 
       const response = await fetch(url, {
         method: method,
         headers: {
-          Accept: 'application/json'
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
         },
         body: data
       });
 
-      handleResponse(response);
+      handleResponse(response, method);
     };
 
     const sendGet = async (userForm) => {
@@ -66,7 +74,7 @@
         }
       });
 
-      handleResponse(response);
+      handleResponse(response, method);
     };
 
     const init = () => {
@@ -74,7 +82,7 @@
 
       nameForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        sentPost(nameForm);
+        sendPost(nameForm);
         return false;
       });
 
